@@ -29,3 +29,15 @@ def graph(h, rt, dataset, xlabel, ylabel, filename):
 	c.Print(filename + ".eps")
         rt.Close()
 
+def graph2d(h, rt, dataset, xlabel, ylabel, filename):
+        for i in range(len(dataset)):
+                h.Fill(dataset[i][0],dataset[i][1])
+        c = ROOT.TCanvas('c', 'c', 800, 600)
+        h.Draw('TEXT')
+        h.GetXaxis().SetTitle(xlabel)
+        h.GetYaxis().SetTitle(ylabel)
+        c.Update()
+        rt.Write()
+        c.Print(filename + ".eps")
+        rt.Close()
+
