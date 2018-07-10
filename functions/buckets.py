@@ -8,7 +8,7 @@ def mass(momentum):
 def quarks(event):
         quarks = []
         for i in range(len(event)):
-                if event[i][0] >= -5 and event[i][0] <= 5:
+                if event[i][0] >= -5 and event[i][0] <= 5 and event[i][1] == 1:
                         quarks.append(event[i])
         return quarks
 
@@ -193,6 +193,8 @@ def top_buckets(event):
 									buckets[1] = new_bucket2 	
 									m_bj1 = m_b1
 									m_bj2 = m_b2
+		print "m1: " + str(m_bj1)
+		print "m2: " + str(m_bj2)
 		if m_bj1 <= 75 or m_bj1 >= 155:
                         labels[0] = 't0'
 		if m_bj2 <= 75 or m_bj2 >= 155:
