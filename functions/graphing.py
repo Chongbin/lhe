@@ -41,3 +41,18 @@ def graph2d(h, rt, dataset, xlabel, ylabel, filename):
         c.Print(filename + ".eps")
         rt.Close()
 
+def graph2d2(h, rt, dataset1, dataset2, xlabel, ylabel, filename, form = 'TEXT',statbin = True):
+	if len(dataset1) != len(dataset2):
+		print "Lengths of the two data sets are not equal"
+	else:
+        	for i in range(len(dataset1)):
+                	h.Fill(dataset1[i],dataset2[i])
+	        c = ROOT.TCanvas('c', 'c', 800, 600)
+	        h.Draw(form)
+		h.SetStats(statbin)
+	        h.GetXaxis().SetTitle(xlabel)
+	        h.GetYaxis().SetTitle(ylabel)
+	        c.Update()
+	        rt.Write()
+	        c.Print(filename + ".eps")
+	        rt.Close()
