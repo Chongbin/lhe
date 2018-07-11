@@ -5,7 +5,9 @@ tt_hadronic
 just run:
 
 `
-cd tt_hadronic/
+cd tt_hadronic/ 
+`
+`
 python buckets_of_tops.py `
 
 
