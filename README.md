@@ -4,7 +4,9 @@ tt_hadronic
 
 just run:
 
-`python tt_hadronic/buckets_of_tops.py `
+`
+cd tt_hadronic/
+python buckets_of_tops.py `
 
 
 current using the LHE: 
