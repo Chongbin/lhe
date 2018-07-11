@@ -4,11 +4,9 @@ tt_hadronic
 
 just run:
 
-`
+```
 cd tt_hadronic/ 
-`
-`
-python buckets_of_tops.py `
+python buckets_of_tops.py ```
 
 
 current using the LHE: 
