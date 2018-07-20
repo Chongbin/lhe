@@ -1,0 +1,12 @@
+*.lhe
+*.pdf
+*.out
+*.aux
+*.log
+*.nav
+*.out
+*.snm
+*.tex
+*.toc
+*.eps
+*.asetup.save
