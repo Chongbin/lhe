@@ -7,6 +7,7 @@
 #include <iterator>
 #include "particle.h"
 #include "bucket_all.h"
+#include "TFile.h"
 using namespace std;
 
 int main()
@@ -83,5 +84,6 @@ int main()
   }
 
   inFile.close();
+  TFile::Open("test.root", "RECREATE");
   return 0;
 }
