@@ -1,10 +1,21 @@
 #include <stdio.h>
 #include <math.h>
- 
+#include <string>
+using namespace std;
+
+//Forward declaration
+namespace finalstate
+{
+  class particle;
+  class finalstate;
+}
+
+
+//put top bucket algo stuff inside bucketAlgo namespace
 namespace bucketAlgo
 {
   //power set generator
-  vector <vector <int> > pSet(vector <int> set)
+  vector <vector <int> > pSet(vector <int> set, int offset=0)
   {
       /*set_size of power set of a set with set_size
         n is (2**n -1)*/
@@ -12,7 +23,7 @@ namespace bucketAlgo
       int counter, j;
       vector <vector <int> > pVec;
       /*Run from counter 000..1 until 111..1 (111..1 excluded)*/
-      for(counter = 1; counter < pow_set_size-1; counter++)
+      for(counter = 1; counter < pow_set_size-offset; counter++)
       {
         vector <int> v;
         for(j = 0; j < set.size(); j++)
@@ -45,5 +56,26 @@ namespace bucketAlgo
   }
   
   
-  //
- }
+  //class for bucket object
+  class bucket
+  {
+  private:
+    string bucket_label;
+  public:
+
+  ~bucket() {} //destructor
+
+  bucket() 
+  {
+    bucket_label = "tx"; //tx means label unassigned
+  }
+
+  bucket(vector <finalstate::particle> nontopjets, finalstate::particle topjet)
+  {
+    return;
+  } 
+
+  string getBucketLabel() {return bucket_label;}
+
+  };
+}

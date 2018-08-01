@@ -8,7 +8,7 @@
 #include  <cstdlib>
 using namespace std;
 
-
+//put event stuff inside finalstate namespace
 namespace finalstate
 {
   class particle 

@@ -10,34 +10,38 @@
 #include "TFile.h"
 using namespace std;
 
-int main()
-//{
-//    vector <int> IndexList;
-//    IndexList.push_back(1);
-//    IndexList.push_back(2);
-//    IndexList.push_back(4);
-//    IndexList.push_back(3);
-//    vector <vector <int> > p_set;
-//    p_set = bucketAlgo::pSet(IndexList);
-//    for (int i = 0; i < p_set.size(); ++i)
-//    {
-//      for (int j = 0; j < p_set[i].size(); ++j)
-//      {
-//        cout << p_set[i][j];
-//      }
-//      cout << "\t: ";
-//      vector <int> cset;
-//      cset = bucketAlgo::cSet(IndexList, p_set[i]);
-//      for (int k = 0; k < cset.size(); ++k)
-//      {
-//        cout << cset[k];
-//      }
-//      cset.clear();
-//      cout << "\n";
-//    }
-//    return 0;
-//}
+void testbucket()
 {
+    vector <int> IndexList;
+    IndexList.push_back(1);
+    IndexList.push_back(2);
+    IndexList.push_back(4);
+    IndexList.push_back(3);
+    vector <vector <int> > p_set;
+    p_set = bucketAlgo::pSet(IndexList);
+    for (int i = 0; i < p_set.size(); ++i)
+    {
+      for (int j = 0; j < p_set[i].size(); ++j)
+      {
+        cout << p_set[i][j];
+      }
+      cout << "\t: ";
+      vector <int> cset;
+      cset = bucketAlgo::cSet(IndexList, p_set[i]);
+      for (int k = 0; k < cset.size(); ++k)
+      {
+        cout << cset[k];
+      }
+      cset.clear();
+      cout << "\n";
+    }
+}
+
+double mTop = 173.5; //GeV
+
+int main()
+{
+  testbucket();
   ifstream inFile("../tt_had_test.lhe");
   string line;
   bool event_flag = false; //switches on when finds an event
