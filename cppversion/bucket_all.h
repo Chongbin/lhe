@@ -107,6 +107,16 @@ namespace bucketAlgo
 
   double getBucketEta() {return etabucket;}
 
+  vector<int> getPIDlist()
+  {
+    vector<int> pidlist;
+    for (int i=0; i < members.size(); ++i)
+    {
+      pidlist.push_back(members[i].getPID());
+    }
+    return pidlist;
+  }
+
   bool twflag() //true : tw ; false : not tw
   {
     bool flag = false; //defalt bucket not tw
@@ -143,22 +153,23 @@ namespace bucketAlgo
 
 
   //function to get two top buckets
-  vector <bucketAlgo::bucket> doublebucket(finalstate::event ev, double MbucketMin, double MbucketMax, string target_label, double B1weight)
+  vector <bucketAlgo::bucket> doublebucket(finalstate::event ev, double MbucketMax, double MbucketMin, string target_label, double B1weight)
   {
     vector <bucketAlgo::bucket> B; //B1 and B2
     bucketAlgo::bucket B1, B2;
     int nonbjetsize = ev.nonbjet.size();
-    int bjetsize = ev.bjet.size();
+    //int bjetsize = ev.bjet.size();
     vector <vector <int> > nonbindexset1;
     vector <int> nonbset;
     for (int j = 0; j < nonbjetsize; ++j) {nonbset.push_back(j);}
-    nonbindexset1 = pSet(nonbset, bjetsize-1); //offset (bjetsize-1) to leave at least one jet for the other b-jet
+    nonbindexset1 = pSet(nonbset); //no offset, bjetsize-1); //offset (bjetsize-1) to leave at least one jet for the other b-jet
     double Deltatw = pow(10,10); //arbit large number
     for (int i = 0; i < nonbindexset1.size(); ++i) //looping over all possible buckets
     {
       vector <vector <int> > nonbindexset2;
       vector <int> restjetset = cSet(nonbset, nonbindexset1[i]);
-      nonbindexset2 = pSet(restjetset); // no offset as all the jets can now be used
+      /*switching of second bucket's freedom for now//nonbindexset2 = pSet(restjetset); // no offset as all the jets can now be used*/
+      nonbindexset2.push_back(restjetset);
       vector <finalstate::particle> nonbA;
       for (int k = 0; k < nonbindexset1[i].size(); ++k)
       {
@@ -173,41 +184,93 @@ namespace bucketAlgo
         }
 	bucketAlgo::bucket Afirst(nonbA, ev.bjet[0]);
 	double AfirstDistance = (target_label == "tw") ? Afirst.twOptMetric() : Afirst.tminusOptMetric();
+        vector <int> pidlAfirst = Afirst.getPIDlist(); //
         bucketAlgo::bucket Asecond(nonbA, ev.bjet[1]);
 	double AsecondDistance = (target_label == "tw") ? Asecond.twOptMetric() : Asecond.tminusOptMetric();
         bucketAlgo::bucket Bfirst(nonbB, ev.bjet[0]);
+        vector <int> pidlAsecond = Asecond.getPIDlist(); //
 	double BfirstDistance = (target_label == "tw") ? Bfirst.twOptMetric() : Bfirst.tminusOptMetric();
         bucketAlgo::bucket Bsecond(nonbB, ev.bjet[1]);
+        vector <int> pidlBfirst = Bfirst.getPIDlist(); //
 	double BsecondDistance = (target_label == "tw") ? Bsecond.twOptMetric() : Bsecond.tminusOptMetric();
+        vector <int> pidlBsecond = Bsecond.getPIDlist(); //
         
-        double del1 = B1weight*min(AfirstDistance, BsecondDistance) + max(AfirstDistance, BsecondDistance);
-        double del2 = B1weight*min(BfirstDistance, AsecondDistance) + max(BfirstDistance, AsecondDistance);
-        if (del1 < del2)
+        double del1 = (B1weight*AfirstDistance) + BsecondDistance;
+        double del2 = (B1weight*BfirstDistance) + AsecondDistance;
+        double del3 = AfirstDistance + (B1weight*BsecondDistance);
+        double del4 = BfirstDistance + (B1weight*AsecondDistance);
+        /*cout << del1 << "\t[";
+        for (int j = 0; j < pidlAfirst.size(); ++j) {cout << pidlAfirst[j] << ", ";}
+        cout << "]\t[";
+        for (int j = 0; j < pidlBsecond.size(); ++j) {cout << pidlBsecond[j] << ", ";}
+        cout << "]" << endl;
+        cout << del2 << "\t[";
+        for (int j = 0; j < pidlBfirst.size(); ++j) {cout << pidlBfirst[j] << ", ";}
+        cout << "]\t[";
+        for (int j = 0; j < pidlAsecond.size(); ++j) {cout << pidlAsecond[j] << ", ";}
+        cout << "]" << endl;
+        cout << del3 << "\t[";
+        for (int j = 0; j < pidlBsecond.size(); ++j) {cout << pidlBsecond[j] << ", ";}
+        cout << "]\t[";
+        for (int j = 0; j < pidlAfirst.size(); ++j) {cout << pidlAfirst[j] << ", ";}
+        cout << "]" << endl;
+        cout << del4 << "\t[";
+        for (int j = 0; j < pidlAsecond.size(); ++j) {cout << pidlAsecond[j] << ", ";}
+        cout << "]\t[";
+        for (int j = 0; j < pidlBfirst.size(); ++j) {cout << pidlBfirst[j] << ", ";}
+        cout << "]" << endl;*/
+        if ((del1 < del2) && (del1 < del3) && (del1 < del4))
         {
-          if ((del1 < Deltatw))
+          if (del1 < Deltatw)
           {
-            B1 = (AfirstDistance < BsecondDistance) ? Afirst : Bsecond;
-            B2 = (AfirstDistance > BsecondDistance) ? Bsecond : Afirst;
+            Deltatw = del1;
+            B1 = Afirst;
+            B2 = Bsecond;
           }
         }
-        else
+        else if ((del2 < del1) && (del2 < del3) && (del2 < del4))
         {
-          if ((del2 < Deltatw))
+          if (del2 < Deltatw)
           {
-            B1 = (BfirstDistance < AsecondDistance) ? Bfirst : Asecond;
-            B2 = (BfirstDistance > AsecondDistance) ? Asecond : Bfirst;
+            Deltatw = del2;
+            B1 = Bfirst;
+            B2 = Asecond;
           }
         }
+        else if ((del3 < del1) && (del3 < del2) && (del3 < del4))
+        {
+          if (del3 < Deltatw)
+          {
+            Deltatw = del3;
+            B1 = Bsecond;
+            B2 = Afirst;
+          }
+        }
+        else 
+        {
+          if (del4 < Deltatw)
+          {
+            Deltatw = del4;
+            B1 = Asecond;
+            B2 = Bfirst;
+          }
+        }
+
+
+
+	//cout << Deltatw << " @@@@@@@@ diff " << endl;
       }
     } // loop over all possible buckets ends
-    
+    cout << "del: " << Deltatw << endl;
     B.push_back(B1);
     B.push_back(B2);
-    cout << B.size() << "\t Bucketsize should be 2" << endl;
+    //cout << B.size() << "\t Bucketsize should be 2" << endl;
     for (int i = 0; i < B.size(); ++i)
     {
       string label; //label assignement
       double Bm = B[i].getBucketMass();
+      //cout << "bucket mass: " << Bm << " : " << (Bm < MbucketMax) << endl;
+      //cout << "bucket mass range: " << MbucketMin << " : " << MbucketMax << endl;
       if ((Bm < MbucketMax) && (Bm > MbucketMin))
       {
         if (target_label == "tw")
@@ -227,7 +290,7 @@ namespace bucketAlgo
   };
 
   //function to get one top bucket
-  bucketAlgo::bucket singlebucket(finalstate::event ev, bucketAlgo::bucket twbucket, double MbucketMin, double MbucketMax)
+  bucketAlgo::bucket singlebucket(finalstate::event ev, bucketAlgo::bucket twbucket, double MbucketMax, double MbucketMin)
   {
     //vector <finalstate::particle> twnonBjets = twbucket.nonbjets;
     finalstate::particle bucketBjet = (ev.bjet[0] == twbucket.bjet) ? ev.bjet[1] : ev.bjet[0]; //bjet to be used in the bucket
