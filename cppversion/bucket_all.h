@@ -25,13 +25,13 @@ namespace bucketAlgo
   {
       //power set size : 2^n
       unsigned int pow_set_size = pow(2, set.size());
-      int counter, j;
+      int counter;
       vector <vector <int> > pVec;
       //Run counter from 000..1 and stop before 111..1 (111..1 excluded)
       for(counter = 1; counter < pow_set_size-offset; counter++)
       {
         vector <int> v;
-        for(j = 0; j < set.size(); j++)
+        for(int j = 0; j < set.size(); j++)
         {
             //if jth bit in the counter is 1 print the jth element
             if(counter & (1<<j))
@@ -70,20 +70,23 @@ namespace bucketAlgo
     double Mbucket, pTbucket, etabucket;
   public:
     vector <finalstate::particle> members;
-    vector <finalstate::particle> nonbjets;
-    finalstate::particle bjet;
+    vector <finalstate::particle> nonBJETS;
+    finalstate::particle BJET;
 
   ~bucket() {} //destructor
 
-  bucket() 
+  bucket()
   {
     bucket_label = "tx"; //tx means label unassigned
     Mbucket = 0; //GeV
     pTbucket = 0; //GeV
+    etabucket = 0;
   }
 
   bucket(vector <finalstate::particle> nonbjets, finalstate::particle bjet)
   {
+    nonBJETS = nonbjets;
+    BJET = bjet;
     members.push_back(bjet);
     finalstate::particle b;
     b = b + bjet;
@@ -127,11 +130,11 @@ namespace bucketAlgo
       {
         if (j > i)
         {
-	  finalstate::particle temp = members[i] + members[j];
+          finalstate::particle temp = members[i] + members[j];
           if( abs((temp.getM()/Mbucket) - (mW/mTop)) < 0.15 )
           {
             flag = true; //it's a tw bucket
-	    break;
+            break;
           } 
         }
       }
@@ -143,7 +146,7 @@ namespace bucketAlgo
 
   double tminusOptMetric()
   {
-    if (Mbucket > 155.0) {return 9999999.0;}
+    if (Mbucket > 155.0) {return pow(10,10);}
     else {return abs(Mbucket - 145.0);}
   }
 
@@ -162,14 +165,41 @@ namespace bucketAlgo
     vector <vector <int> > nonbindexset1;
     vector <int> nonbset;
     for (int j = 0; j < nonbjetsize; ++j) {nonbset.push_back(j);}
-    nonbindexset1 = pSet(nonbset); //no offset, bjetsize-1); //offset (bjetsize-1) to leave at least one jet for the other b-jet
+    if (target_label == "tw")
+    {
+      nonbindexset1 = pSet(nonbset); //no offset for tw
+    }
+    else //for t- pair search 
+    {
+      for (int l1 = 0; l1 < nonbjetsize; ++l1)
+      {
+        vector <int> tempPar1;
+        tempPar1.push_back(nonbset[l1]);
+        nonbindexset1.push_back(tempPar1);
+        tempPar1.clear();
+      }
+    }
     double Deltatw = pow(10,10); //arbit large number
     for (int i = 0; i < nonbindexset1.size(); ++i) //looping over all possible buckets
     {
       vector <vector <int> > nonbindexset2;
       vector <int> restjetset = cSet(nonbset, nonbindexset1[i]);
       /*switching of second bucket's freedom for now//nonbindexset2 = pSet(restjetset); // no offset as all the jets can now be used*/
-      nonbindexset2.push_back(restjetset);
+      if (target_label == "tw") 
+      {
+        nonbindexset2.push_back(restjetset);
+      }
+      else //for t- pair search
+      {
+        for (int l2 = 0; l2 < restjetset.size(); ++l2)
+        {
+          vector <int> tempPar2;
+          tempPar2.push_back(restjetset[l2]);
+          nonbindexset2.push_back(tempPar2);
+          tempPar2.clear();
+        cout << "--->" << nonbindexset1[i][0] << "\t" << nonbindexset2[l2][0] << endl;
+        }
+      }
       vector <finalstate::particle> nonbA;
       for (int k = 0; k < nonbindexset1[i].size(); ++k)
       {
@@ -261,7 +291,7 @@ namespace bucketAlgo
 	//cout << Deltatw << " @@@@@@@@ diff " << endl;
       }
     } // loop over all possible buckets ends
-    cout << "del: " << Deltatw << endl;
+    if (target_label == "t-") {cout << "del: " << Deltatw << endl;}
     B.push_back(B1);
     B.push_back(B2);
     //cout << B.size() << "\t Bucketsize should be 2" << endl;
@@ -285,51 +315,65 @@ namespace bucketAlgo
       }
       B[i].setBucketLabel(label);
     }
-
     return B;
   };
 
   //function to get one top bucket
   bucketAlgo::bucket singlebucket(finalstate::event ev, bucketAlgo::bucket twbucket, double MbucketMax, double MbucketMin)
   {
-    //vector <finalstate::particle> twnonBjets = twbucket.nonbjets;
-    finalstate::particle bucketBjet = (ev.bjet[0] == twbucket.bjet) ? ev.bjet[1] : ev.bjet[0]; //bjet to be used in the bucket
-    vector <int> bucketnonbset;
+
+
+    bucketAlgo::bucket newbucket;
+    
+    double Deltamin = pow(10,10); //arbit large number
+
+    finalstate::particle bucketBjet = (ev.bjet[0] == twbucket.BJET) ? ev.bjet[1] : ev.bjet[0]; //bjet to be used in the bucket
+    
     int Evnonbjetsize = ev.nonbjet.size();
-    int twnonbjetsize = twbucket.nonbjets.size();
+    int twnonbjetsize = twbucket.nonBJETS.size();
+    vector <int> plist = twbucket.getPIDlist();
+    cout << "[ ";
+    for (vector<int>::const_iterator l = plist.begin(); l != plist.end(); ++l)
+	        cout << *l << ", ";
+    cout << " ]" << endl;
+    //cout << "***" << twbucket.nonBJETS.size() << endl;
     for (int i = 0; i < Evnonbjetsize; ++i)
     {
       bool findtw = false;
+
       for (int j = 0; j < twnonbjetsize; ++j)
       {
-        if (ev.nonbjet[i] == twbucket.nonbjets[j]) {findtw = true;} //particle part of tw bucket
+        bool findtemp = (ev.nonbjet[i]==twbucket.nonBJETS[j]); //particle part of tw bucket; can be added to extra
+	findtw = findtw || findtemp;
+        //cout << "found a match: " << findtw << endl;
+	  cout << "+ ev| px: " << ev.nonbjet[i].getpX() << "\tpy: " << ev.nonbjet[i].getpY() << "\tpz: " << ev.nonbjet[i].getpZ() << "\tE " << ev.nonbjet[i].getE() << "\tpid: " <<  ev.nonbjet[i].getPID() << "\tstatus: " << ev.nonbjet[i].getStatus() << endl;
+  	  cout << "+ twB| px: " << twbucket.nonBJETS[j].getpX() << "\tpy: " << twbucket.nonBJETS[j].getpY() << "\tpz: " << twbucket.nonBJETS[j].getpZ() << "\tE " << twbucket.nonBJETS[j].getE() << "\tpid: " <<  twbucket.nonBJETS[j].getPID() << "\tstatus: " << twbucket.nonBJETS[j].getStatus() << "\tdecision:" << findtemp << endl;
       }
-      if (findtw = false) {bucketnonbset.push_back(i);}
-    }
-    bucketAlgo::bucket finalbucket;
-    vector <vector <int> > nonbindexset = pSet(bucketnonbset);  // no offset as all the jets can now be used
-    double Deltatmin = pow(10,10); //arbit large number
-    for (int i1 = 0; i1 < nonbindexset.size(); ++i1) //loop over all possible buckets
-    {
-      vector <finalstate::particle> nonB;
-      for (int j1 = 0; j1 < nonbindexset[i1].size(); ++j1)
+      cout << "!!!!decision: " << findtw << endl;
+      if (!findtw)  //no match
       {
-        nonB.push_back(ev.nonbjet[nonbindexset[i1][j1]]);
-      }
-      bucketAlgo::bucket btemp(nonB, bucketBjet);
-      double del = btemp.tminusOptMetric();
-      if (Deltatmin > del)
-      {
-        Deltatmin = del;
-        finalbucket = btemp;
-      }
+        vector <finalstate::particle> tempnb;
+        tempnb.push_back(ev.nonbjet[i]);
+        bucketAlgo::bucket tempbucket(tempnb, bucketBjet);
+        if (Deltamin > tempbucket.tminusOptMetric())
+        {
+          Deltamin = tempbucket.tminusOptMetric();
+          newbucket = tempbucket;
+        }
+	cout << "~~~~~~~~~~~~~" << Deltamin << "\t" << ev.nonbjet[i].getPID() << endl;
+      } 
     }
+    cout << "GAH" << endl;
+    int pV = (newbucket.nonBJETS.size()!=0) ? newbucket.nonBJETS[0].getPID() : -9999;
+    cout << "```````````````````" << Deltamin << "\t" << pV << endl;
     //label assignement
-    double mfinalbucket = finalbucket.getBucketMass();
-    string label = ((mfinalbucket < MbucketMax) && (mfinalbucket  > MbucketMin)) ? "t-" : "t0";
-    finalbucket.setBucketLabel(label);
-    return finalbucket;
-  }
+    cout << "HA" << endl;
+    double massbucket = newbucket.getBucketMass();
+    cout << "HAHA" << endl;
+    string label = ((massbucket < MbucketMax) && (massbucket  > MbucketMin)) ? "t-" : "t0";
+    newbucket.setBucketLabel(label);
+    return newbucket;
+  };
 
 //namespace ends
 }

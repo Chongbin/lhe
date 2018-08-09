@@ -73,10 +73,12 @@ int main()
         double bucketP2massMax = 155; //GeV
         double bucketP2massMin = 75; //GeV
         double firstP2Bucketwt = 1;
+        //if (tmincand.size() != 0) {cout << "event: " << eventcounter << endl;}
         
         if (tmincand.size() == 2)
         {
           B = bucketAlgo::doublebucket(ev1, bucketP2massMax, bucketP2massMin, "t-", firstP2Bucketwt);
+          cout << "event: " << eventcounter << endl;
         }
         else if (tmincand.size() == 1)
         {
@@ -87,11 +89,11 @@ int main()
         // fill histograms from the two buckets here
         for (int i = 0; i < B.size(); ++i)
         {
-          cout << "label: " << B[i].getBucketLabel() << "\tmass: " << B[i].getBucketMass() << "\t[";
+          /*cout << "label: " << B[i].getBucketLabel() << "\tmass: " << B[i].getBucketMass() << "\t[";
           vector<int> pidlist =  B[i].getPIDlist();
        
           for (int j = 0; j < pidlist.size(); ++j) {cout << pidlist[j] << ", ";}
-          cout << "]" << endl;
+          cout << "]" << endl;*/
           if (B[i].getBucketLabel() == "tw") 
           {
         	  htwmass.Fill(B[i].getBucketMass());
