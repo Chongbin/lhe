@@ -18,7 +18,30 @@ namespace bucketAlgo
   double mTop = 173.5; //GeV
   double mW = 80.4; //GeV
 
+  int indexfinder(vector <finalstate::particle> EVT, finalstate::particle p) //(just to match the erroneous python version) (delete all of this in the final version) it is just to mimic a bug
+  {
+    int index = -99999;
+    for (int i = 0; i < EVT.size(); ++i)
+    {
+      if (EVT[i]==p) {index = i;}
+    }
+    return index;
+  };
 
+  vector <finalstate::particle> compvec(vector <finalstate::particle> EVT, vector <finalstate::particle> set) //another bug
+  {
+    vector <finalstate::particle> compset;
+    for (int i = 0; i < EVT.size(); ++i)
+    {
+      bool findflag = false;
+      for (int j = 0; j < set.size(); ++j)
+      {
+        findflag = findflag || (EVT[i]==set[j]); 
+      }
+      if (!findflag) {compset.push_back(EVT[i]);}
+    }
+    return compset;
+  };
 
   //power set generator
   vector <vector <int> > pSet(vector <int> set, int offset=0)
@@ -68,6 +91,7 @@ namespace bucketAlgo
   private:
     string bucket_label;
     double Mbucket, pTbucket, etabucket;
+    double mpairnum, ratio_min;
   public:
     vector <finalstate::particle> members;
     vector <finalstate::particle> nonBJETS;
@@ -81,6 +105,7 @@ namespace bucketAlgo
     Mbucket = 0; //GeV
     pTbucket = 0; //GeV
     etabucket = 0;
+    mpairnum = -1; //GeV
   }
 
   bucket(vector <finalstate::particle> nonbjets, finalstate::particle bjet)
@@ -122,8 +147,14 @@ namespace bucketAlgo
 
   bool twflag() //true : tw ; false : not tw
   {
+    this->ratio_min = pow(10, 10); 
     bool flag = false; //defalt bucket not tw
     int sizeB = members.size();
+
+    bool mflag = false; //I do labelling later (must be deleted later)
+    if ((Mbucket < 200) && (Mbucket > 150)) {mflag = true;} // must be deleted
+
+
     for (int i = 0; i < sizeB; ++i)
     {
       for (int j = 0; j < sizeB; ++j)
@@ -131,16 +162,30 @@ namespace bucketAlgo
         if (j > i)
         {
           finalstate::particle temp = members[i] + members[j];
+          double dd = abs((temp.getM()/Mbucket) - (mW/mTop));
+          if (this->ratio_min > dd) 
+          {
+            this->ratio_min = dd;
+            this->mpairnum = temp.getM();
+          }
+          cout << "----------L: " << this->mpairnum << endl;
           if( abs((temp.getM()/Mbucket) - (mW/mTop)) < 0.15 )
           {
-            flag = true; //it's a tw bucket
-            break;
+            flag = flag || true; //it's a tw bucket
+            if (mflag) {break;} //delete this line (not really the algo)
+            //break; //uncomment this later
           } 
         }
       }
+      if (flag && mflag) {break;} // modify this too (make if just flag and delete mflag)
     }
+    cout << "----------R: " << this->mpairnum << endl;
     return flag;
   }
+
+  double WcandMnum() {return this->mpairnum;}
+  
+  double WcandRatio() {return this->ratio_min;}
 
   double twOptMetric() {return (Mbucket - mTop)*(Mbucket - mTop);} 
 
@@ -151,6 +196,20 @@ namespace bucketAlgo
   }
 
   };
+
+
+  //function for the extra jets
+  vector <finalstate::particle> extra(vector <finalstate::particle> EVT, vector <bucketAlgo::bucket> B)
+  {
+    vector <finalstate::particle> Xmembers = EVT;
+    for (int i = 0; i < B.size(); ++i)
+    {
+      Xmembers = bucketAlgo::compvec(Xmembers, B[i].members);
+    }
+    return Xmembers;
+  };
+  
+
 
 
 
@@ -323,12 +382,12 @@ namespace bucketAlgo
   {
 
 
-    bucketAlgo::bucket newbucket;
-    
+    bucketAlgo::bucket newbucket; 
     double Deltamin = pow(10,10); //arbit large number
 
     finalstate::particle bucketBjet = (ev.bjet[0] == twbucket.BJET) ? ev.bjet[1] : ev.bjet[0]; //bjet to be used in the bucket
-    
+    int bindex = indexfinder(ev.EVT, bucketBjet); //mimicing a bug
+
     int Evnonbjetsize = ev.nonbjet.size();
     int twnonbjetsize = twbucket.nonBJETS.size();
     vector <int> plist = twbucket.getPIDlist();
@@ -337,14 +396,15 @@ namespace bucketAlgo
 	        cout << *l << ", ";
     cout << " ]" << endl;
     //cout << "***" << twbucket.nonBJETS.size() << endl;
+    vector <finalstate::particle> nonbalt = compvec(ev.nonbjet, twbucket.nonBJETS); //another bug included! 
     for (int i = 0; i < Evnonbjetsize; ++i)
     {
       bool findtw = false;
-
+      if (indexfinder(ev.EVT, ev.nonbjet[i]) < bindex) {continue;} //this is just to mimic a bug
       for (int j = 0; j < twnonbjetsize; ++j)
       {
         bool findtemp = (ev.nonbjet[i]==twbucket.nonBJETS[j]); //particle part of tw bucket; can be added to extra
-	findtw = findtw || findtemp;
+        findtw = findtw || findtemp;
         //cout << "found a match: " << findtw << endl;
 	  cout << "+ ev| px: " << ev.nonbjet[i].getpX() << "\tpy: " << ev.nonbjet[i].getpY() << "\tpz: " << ev.nonbjet[i].getpZ() << "\tE " << ev.nonbjet[i].getE() << "\tpid: " <<  ev.nonbjet[i].getPID() << "\tstatus: " << ev.nonbjet[i].getStatus() << endl;
   	  cout << "+ twB| px: " << twbucket.nonBJETS[j].getpX() << "\tpy: " << twbucket.nonBJETS[j].getpY() << "\tpz: " << twbucket.nonBJETS[j].getpZ() << "\tE " << twbucket.nonBJETS[j].getE() << "\tpid: " <<  twbucket.nonBJETS[j].getPID() << "\tstatus: " << twbucket.nonBJETS[j].getStatus() << "\tdecision:" << findtemp << endl;
@@ -361,19 +421,21 @@ namespace bucketAlgo
           newbucket = tempbucket;
         }
 	cout << "~~~~~~~~~~~~~" << Deltamin << "\t" << ev.nonbjet[i].getPID() << endl;
-      } 
+      }
     }
-    cout << "GAH" << endl;
+    
+    if (newbucket.members.size() == 0) {bucketAlgo::bucket tempbugb(nonbalt, bucketBjet); newbucket = tempbugb;} //bug please delete later "(
     int pV = (newbucket.nonBJETS.size()!=0) ? newbucket.nonBJETS[0].getPID() : -9999;
     cout << "```````````````````" << Deltamin << "\t" << pV << endl;
     //label assignement
-    cout << "HA" << endl;
     double massbucket = newbucket.getBucketMass();
-    cout << "HAHA" << endl;
     string label = ((massbucket < MbucketMax) && (massbucket  > MbucketMin)) ? "t-" : "t0";
     newbucket.setBucketLabel(label);
+    cout << "M_ORI: " << newbucket.getBucketMass() << "\t" << newbucket.BJET.getM() << endl;
     return newbucket;
   };
+
+
 
 //namespace ends
 }

@@ -77,7 +77,7 @@ namespace finalstate
   
   double getM() {return sqrt(E*E - px*px - py*py - pz*pz);}
 
-  double getPt() {return sqrt(px*py + py*py);}
+  double getPt() {return sqrt(px*px + py*py);}
 
   double getEta() {return atanh(pz/(sqrt(px*px + py*py + pz*pz)));}
 
@@ -113,6 +113,7 @@ namespace finalstate
   public:
     vector <particle> bjet;
     vector <particle> nonbjet;
+    vector <particle> EVT;// delete this (this is silly)
   
   ~event() {} //destructor
   
@@ -120,6 +121,7 @@ namespace finalstate
   
   event(vector <particle> evt) 
   {
+    EVT = evt; // delete this (this is silly)
     for (int i = 0; i < evt.size(); ++i) {
       int pid = evt[i].getPID();
       //cout << pid << "\t" << evt[i].getpX() << endl;
