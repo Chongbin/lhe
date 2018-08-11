@@ -356,15 +356,16 @@ namespace bucketAlgo
     //cout << B.size() << "\t Bucketsize should be 2" << endl;
     for (int i = 0; i < B.size(); ++i)
     {
-      string label; //label assignement
+      string label; //label assignement , 
       double Bm = B[i].getBucketMass();
       //cout << "bucket mass: " << Bm << " : " << (Bm < MbucketMax) << endl;
       //cout << "bucket mass range: " << MbucketMin << " : " << MbucketMax << endl;
+      bool prelabel = B[i].twflag(); //prelabel was again introduced to mimic a redundancy
       if ((Bm < MbucketMax) && (Bm > MbucketMin))
       {
         if (target_label == "tw")
         {
-          label = (B[i].twflag())?"tw":"t-";
+          label = (prelabel)?"tw":"t-";
         }
         else {label = "t-";}
       }

@@ -20,14 +20,15 @@ int main()
   //ifstream inFile("../tt_had_test_one.lhe");
   //ifstream inFile("../tt_had_test.lhe");
   ifstream inFile("../tt_hadronic.lhe");
+  //ifstream inFile("../bbjjj.lhe");
   string line;
   bool event_flag = false; //switches on when finds an event
   bool event_meta = false; //event block readability switched off to skip the first event block line
   vector <finalstate::particle> evt;
   //mass
-  TH1F htwmass("htwmass", "Mass of tw Buckets",150,0,300); 
-  TH1F htminmass("htminmass", "Mass of t- Buckets",150,0,300); 
-  TH1F ht0mass("ht0mass", "Mass of t0 Buckets",150,0,300); 
+  TH1F htwmass("htwmass", "Mass of tw Buckets",150,0.0001,300); 
+  TH1F htminmass("htminmass", "Mass of t- Buckets",150,0.0001,300); 
+  TH1F ht0mass("ht0mass", "Mass of t0 Buckets",150,0.0001,300); 
   TH1F hXmass("hXmass", "Mass of the extra jets",110,-1,10); 
   // pT
   TH1F htwPt("htwPt", "Pt of tw Buckets",250,0,1200); 
@@ -40,7 +41,7 @@ int main()
   TH1F ht0eta("ht0eta", "#eta of t0 Buckets",100,-10,10);
   TH1F hXeta("hXeta", "#eta of the extra jets",100,-10,10);
   //W candidate mass
-  TH1F hmW("hmW", "Mass of the (possible) W candidate",150,0,300); 
+  TH1F hmW("hmW", "Mass of the (possible) W candidate",150,0.0001,300); 
   TH1F hmBucketPrim("hmBucketPrimitive", "Mass of the Entire Buckets before Recalculation",150,0,300); 
   TH1F hmratio("hmratio", "Mass Ratio Difference",120,-0.1,1.1); 
   
