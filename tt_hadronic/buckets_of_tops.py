@@ -5,6 +5,11 @@ import ROOT
 import graphing
 import buckets_all
 
+ROOT.gROOT.SetBatch(1)
+
+#data = graphing.split('../tt_had_test_one.lhe')
+#data = graphing.split('../tt_had_test.lhe')
+#data = graphing.split('../bbjjj.lhe')
 data = graphing.split('../tt_hadronic.lhe')
 
 mass_tw = []
@@ -22,9 +27,13 @@ eta_extra = []
 m_jk = []
 m_b = []
 ratio = []
-
+twcounter = 0
+tmincounter = 0
+t0counter = 0
 for i in range(len(data)):
+	print "event: %i" % i
         result = buckets_all.top_buckets(data[i])
+ 
         if len(result) > 0:
                 labels = result[0]
                 bucket = result[1]
@@ -42,10 +51,14 @@ for i in range(len(data)):
                         for j in range(len(bucket[n])):
                                 p = [sum(x) for x in zip(p, bucket[n][j][0])]
                         m = buckets_all.mass(p)
+                        piD = [x[-1][0] for x in bucket[n]]
+                        print "label: %s\tmass: %.3f"% (labels[n], m), piD
                         pt = math.sqrt(p[0] ** 2 + p[1] ** 2)
                         pmag = math.sqrt(pt ** 2 + p[2] ** 2)
-                        pangle = math.acos(p[2] / pmag)
-                        eta = - math.log(math.tan(pangle/2))
+			if (pmag == 0): eta = 0
+			else: 
+				pangle = math.acos(p[2] / pmag)
+                        	eta = - math.log(math.tan(pangle/2))
                         if labels[n] == "tw":
                                 mass_tw.append(m)
                                 pt_tw.append(pt)
@@ -55,6 +68,7 @@ for i in range(len(data)):
                                 pt_t_.append(pt)
                                 eta_t_.append(eta)
                         if labels[n] == "t0":
+				##print "LL: ", labels[n], "\tmass: ", m
                                 mass_t0.append(m)
                                 pt_t0.append(pt)
                                 eta_t0.append(eta)
@@ -62,6 +76,8 @@ for i in range(len(data)):
                         for j in range(len(bucket[-1])):
                                 p = bucket[-1][j][0]
                                 m = buckets_all.mass(p)
+				#~#print "EXTRA bucket::::: ", p
+				#~#print "EXTRA mass ", m
                                 pt = math.sqrt(p[0] ** 2 + p[1] ** 2)
                                 pmag = math.sqrt(pt ** 2 + p[2] ** 2)
                                 pangle = math.acos(p[2] / pmag)
@@ -75,20 +91,25 @@ for i in range(len(data)):
                                 else:
                                         eta = - math.log(math.tan(pangle/2))
                                 eta_extra.append(eta)
-                if i % 1000 == 0:
-                        print "DONE " + str(i)
+                #if i % 1000 == 0:
+                 #       print "DONE " + str(i)
+		twcounter += labels.count("tw")
+		tmincounter += labels.count("t_")
+		t0counter += labels.count("t0")
 
+print "tw: %i\tt-: %i\tt0: %i"%(twcounter, tmincounter, t0counter)
+print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ", len(mass_extra)
 # Mass
 f_m_tw = ROOT.TFile("reconstructed_top_mass_tw.root",'RECREATE')
-h_m_tw = ROOT.TH1F("h",'Mass of tw Buckets',150,0,300)
+h_m_tw = ROOT.TH1F("h",'Mass of tw Buckets',150,0.0001,300)
 graphing.graph(h_m_tw, f_m_tw, mass_tw, 'Mass (GeV)', 'Frequency', 'reconstructed_top_mass_tw')
 
 f_m_t_ = ROOT.TFile("reconstructed_top_mass_t_.root",'RECREATE')
-h_m_t_ = ROOT.TH1F("h",'Mass of t_ Buckets',150,0,300)
+h_m_t_ = ROOT.TH1F("h",'Mass of t_ Buckets',150,0.0001,300)
 graphing.graph(h_m_t_, f_m_t_, mass_t_, 'Mass (GeV)', 'Frequency', 'reconstructed_top_mass_t_')
 
 f_m_t0 = ROOT.TFile("reconstructed_top_mass_t0.root",'RECREATE')
-h_m_t0 = ROOT.TH1F("h",'Mass of t0 Buckets',150,0,300)
+h_m_t0 = ROOT.TH1F("h",'Mass of t0 Buckets',150,0.0001,300)
 graphing.graph(h_m_t0, f_m_t0, mass_t0, 'Mass (GeV)', 'Frequency', 'reconstructed_top_mass_t0')
 
 f_m_x = ROOT.TFile("reconstructed_top_mass_x.root",'RECREATE')
@@ -131,7 +152,7 @@ graphing.graph(h_eta_x, f_eta_x, eta_extra, 'Pseudorapidity', 'Frequency', 'reco
 
 # Masses and ratios in the W candidate test
 f_m_jk = ROOT.TFile("reconstructed_top_m_jk.root",'RECREATE')
-h_m_jk = ROOT.TH1F("h",'Mass of the (possible) W candidate',150,0,300)
+h_m_jk = ROOT.TH1F("h",'Mass of the (possible) W candidate',150,0.0001,300)
 graphing.graph(h_m_jk, f_m_jk, m_jk, 'Mass (GeV)', 'Frequency', 'reconstructed_top_m_jk')
 
 f_m_b = ROOT.TFile("reconstructed_top_m_b.root",'RECREATE')

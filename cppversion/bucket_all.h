@@ -18,16 +18,6 @@ namespace bucketAlgo
   double mTop = 173.5; //GeV
   double mW = 80.4; //GeV
 
-  int indexfinder(vector <finalstate::particle> EVT, finalstate::particle p) //(just to match the erroneous python version) (delete all of this in the final version) it is just to mimic a bug
-  {
-    int index = -99999;
-    for (int i = 0; i < EVT.size(); ++i)
-    {
-      if (EVT[i]==p) {index = i;}
-    }
-    return index;
-  };
-
   vector <finalstate::particle> compvec(vector <finalstate::particle> EVT, vector <finalstate::particle> set) //another bug
   {
     vector <finalstate::particle> compset;
@@ -147,45 +137,35 @@ namespace bucketAlgo
 
   bool twflag() //true : tw ; false : not tw
   {
-    this->ratio_min = pow(10, 10); 
+    ratio_min = pow(10, 10); 
     bool flag = false; //defalt bucket not tw
     int sizeB = members.size();
-
-    bool mflag = false; //I do labelling later (must be deleted later)
-    if ((Mbucket < 200) && (Mbucket > 150)) {mflag = true;} // must be deleted
 
 
     for (int i = 0; i < sizeB; ++i)
     {
       for (int j = 0; j < sizeB; ++j)
       {
-        if (j > i)
+        if (j < i) {continue;}
+	cout << "(i,j): " << i << "\t" << j << endl;
+	finalstate::particle temp = members[i]+members[j];
+        double dd = abs((temp.getM()/Mbucket) - (mW/mTop));
+	cout << "dd: " << dd << "\tratmin: " << ratio_min << endl;
+        if (ratio_min > dd) //
         {
-          finalstate::particle temp = members[i] + members[j];
-          double dd = abs((temp.getM()/Mbucket) - (mW/mTop));
-          if (this->ratio_min > dd) 
-          {
-            this->ratio_min = dd;
-            this->mpairnum = temp.getM();
-          }
-          cout << "----------L: " << this->mpairnum << endl;
-          if( abs((temp.getM()/Mbucket) - (mW/mTop)) < 0.15 )
-          {
-            flag = flag || true; //it's a tw bucket
-            if (mflag) {break;} //delete this line (not really the algo)
-            //break; //uncomment this later
-          } 
+          ratio_min = dd;
+          mpairnum = temp.getM();
+	  cout << "temp mass W: " << mpairnum << endl;
         }
       }
-      if (flag && mflag) {break;} // modify this too (make if just flag and delete mflag)
     }
-    cout << "----------R: " << this->mpairnum << endl;
+    if ( (ratio_min) < 0.15 ) {flag = true;}
     return flag;
   }
 
-  double WcandMnum() {return this->mpairnum;}
+  double WcandMnum() {return mpairnum;}
   
-  double WcandRatio() {return this->ratio_min;}
+  double WcandRatio() {return ratio_min;}
 
   double twOptMetric() {return (Mbucket - mTop)*(Mbucket - mTop);} 
 
@@ -256,7 +236,7 @@ namespace bucketAlgo
           tempPar2.push_back(restjetset[l2]);
           nonbindexset2.push_back(tempPar2);
           tempPar2.clear();
-        cout << "--->" << nonbindexset1[i][0] << "\t" << nonbindexset2[l2][0] << endl;
+        //**//cout << "--->" << nonbindexset1[i][0] << "\t" << nonbindexset2[l2][0] << endl;
         }
       }
       vector <finalstate::particle> nonbA;
@@ -271,16 +251,16 @@ namespace bucketAlgo
         {
           nonbB.push_back(ev.nonbjet[nonbindexset2[i1][k1]]);
         }
-	bucketAlgo::bucket Afirst(nonbA, ev.bjet[0]);
-	double AfirstDistance = (target_label == "tw") ? Afirst.twOptMetric() : Afirst.tminusOptMetric();
+        bucketAlgo::bucket Afirst(nonbA, ev.bjet[0]);
+        double AfirstDistance = (target_label == "tw") ? Afirst.twOptMetric() : Afirst.tminusOptMetric();
         vector <int> pidlAfirst = Afirst.getPIDlist(); //
         bucketAlgo::bucket Asecond(nonbA, ev.bjet[1]);
 	double AsecondDistance = (target_label == "tw") ? Asecond.twOptMetric() : Asecond.tminusOptMetric();
-        bucketAlgo::bucket Bfirst(nonbB, ev.bjet[0]);
         vector <int> pidlAsecond = Asecond.getPIDlist(); //
+        bucketAlgo::bucket Bfirst(nonbB, ev.bjet[0]);
 	double BfirstDistance = (target_label == "tw") ? Bfirst.twOptMetric() : Bfirst.tminusOptMetric();
-        bucketAlgo::bucket Bsecond(nonbB, ev.bjet[1]);
         vector <int> pidlBfirst = Bfirst.getPIDlist(); //
+        bucketAlgo::bucket Bsecond(nonbB, ev.bjet[1]);
 	double BsecondDistance = (target_label == "tw") ? Bsecond.twOptMetric() : Bsecond.tminusOptMetric();
         vector <int> pidlBsecond = Bsecond.getPIDlist(); //
         
@@ -347,25 +327,36 @@ namespace bucketAlgo
 
 
 
-	//cout << Deltatw << " @@@@@@@@ diff " << endl;
+	//if (target_label == "t-") {cout << Deltatw << " @@@@@@@@ difftmp " << B1.members.size() << "\t" << B2.members.size() << "\tdel1: " <<  del1 << "\tdel2" << del2 << "\tdel3" << del3 << endl;}
       }
     } // loop over all possible buckets ends
-    if (target_label == "t-") {cout << "del: " << Deltatw << endl;}
+    //if (target_label == "t-") {cout << "del: " << Deltatw << endl;}
+    //cout << B.size() << "\t Bucketsize should be 2" << endl;
     B.push_back(B1);
     B.push_back(B2);
-    //cout << B.size() << "\t Bucketsize should be 2" << endl;
+    if (target_label == "tw") 
+    {
+      cout << "del: " << Deltatw << endl;
+      cout << "B1: [";
+      vector<int> b1pid = B[0].getPIDlist();
+      for (int j = 0; j < b1pid.size(); ++j) {cout << b1pid[j] << ",\t";}
+      cout << " ] " << endl;
+      cout << "B2: [";
+      vector<int> b2pid = B[1].getPIDlist();
+      for (int j = 0; j < b2pid.size(); ++j) {cout << b2pid[j] << ",\t";}
+      cout << " ] " << endl;
+    }
     for (int i = 0; i < B.size(); ++i)
     {
       string label; //label assignement , 
       double Bm = B[i].getBucketMass();
       //cout << "bucket mass: " << Bm << " : " << (Bm < MbucketMax) << endl;
       //cout << "bucket mass range: " << MbucketMin << " : " << MbucketMax << endl;
-      bool prelabel = B[i].twflag(); //prelabel was again introduced to mimic a redundancy
       if ((Bm < MbucketMax) && (Bm > MbucketMin))
       {
         if (target_label == "tw")
         {
-          label = (prelabel)?"tw":"t-";
+          label = (B[i].twflag())?"tw":"t-";
         }
         else {label = "t-";}
       }
@@ -378,39 +369,36 @@ namespace bucketAlgo
     return B;
   };
 
+
   //function to get one top bucket
   bucketAlgo::bucket singlebucket(finalstate::event ev, bucketAlgo::bucket twbucket, double MbucketMax, double MbucketMin)
   {
-
 
     bucketAlgo::bucket newbucket; 
     double Deltamin = pow(10,10); //arbit large number
 
     finalstate::particle bucketBjet = (ev.bjet[0] == twbucket.BJET) ? ev.bjet[1] : ev.bjet[0]; //bjet to be used in the bucket
-    int bindex = indexfinder(ev.EVT, bucketBjet); //mimicing a bug
 
     int Evnonbjetsize = ev.nonbjet.size();
     int twnonbjetsize = twbucket.nonBJETS.size();
     vector <int> plist = twbucket.getPIDlist();
-    cout << "[ ";
-    for (vector<int>::const_iterator l = plist.begin(); l != plist.end(); ++l)
-	        cout << *l << ", ";
-    cout << " ]" << endl;
+    //**//cout << "[ ";
+    //**//for (vector<int>::const_iterator l = plist.begin(); l != plist.end(); ++l)
+	        //**//cout << *l << ", ";
+    //**//cout << " ]" << endl;
     //cout << "***" << twbucket.nonBJETS.size() << endl;
-    vector <finalstate::particle> nonbalt = compvec(ev.nonbjet, twbucket.nonBJETS); //another bug included! 
     for (int i = 0; i < Evnonbjetsize; ++i)
     {
       bool findtw = false;
-      if (indexfinder(ev.EVT, ev.nonbjet[i]) < bindex) {continue;} //this is just to mimic a bug
       for (int j = 0; j < twnonbjetsize; ++j)
       {
         bool findtemp = (ev.nonbjet[i]==twbucket.nonBJETS[j]); //particle part of tw bucket; can be added to extra
         findtw = findtw || findtemp;
         //cout << "found a match: " << findtw << endl;
-	  cout << "+ ev| px: " << ev.nonbjet[i].getpX() << "\tpy: " << ev.nonbjet[i].getpY() << "\tpz: " << ev.nonbjet[i].getpZ() << "\tE " << ev.nonbjet[i].getE() << "\tpid: " <<  ev.nonbjet[i].getPID() << "\tstatus: " << ev.nonbjet[i].getStatus() << endl;
-  	  cout << "+ twB| px: " << twbucket.nonBJETS[j].getpX() << "\tpy: " << twbucket.nonBJETS[j].getpY() << "\tpz: " << twbucket.nonBJETS[j].getpZ() << "\tE " << twbucket.nonBJETS[j].getE() << "\tpid: " <<  twbucket.nonBJETS[j].getPID() << "\tstatus: " << twbucket.nonBJETS[j].getStatus() << "\tdecision:" << findtemp << endl;
+	  //**//cout << "+ ev| px: " << ev.nonbjet[i].getpX() << "\tpy: " << ev.nonbjet[i].getpY() << "\tpz: " << ev.nonbjet[i].getpZ() << "\tE " << ev.nonbjet[i].getE() << "\tpid: " <<  ev.nonbjet[i].getPID() << "\tstatus: " << ev.nonbjet[i].getStatus() << endl;
+  	  //**//cout << "+ twB| px: " << twbucket.nonBJETS[j].getpX() << "\tpy: " << twbucket.nonBJETS[j].getpY() << "\tpz: " << twbucket.nonBJETS[j].getpZ() << "\tE " << twbucket.nonBJETS[j].getE() << "\tpid: " <<  twbucket.nonBJETS[j].getPID() << "\tstatus: " << twbucket.nonBJETS[j].getStatus() << "\tdecision:" << findtemp << endl;
       }
-      cout << "!!!!decision: " << findtw << endl;
+      //**//cout << "!!!!decision: " << findtw << endl;
       if (!findtw)  //no match
       {
         vector <finalstate::particle> tempnb;
@@ -421,18 +409,15 @@ namespace bucketAlgo
           Deltamin = tempbucket.tminusOptMetric();
           newbucket = tempbucket;
         }
-	cout << "~~~~~~~~~~~~~" << Deltamin << "\t" << ev.nonbjet[i].getPID() << endl;
+	//**//cout << "~~~~~~~~~~~~~" << Deltamin << "\t" << ev.nonbjet[i].getPID() << endl;
       }
     }
     
-    if (newbucket.members.size() == 0) {bucketAlgo::bucket tempbugb(nonbalt, bucketBjet); newbucket = tempbugb;} //bug please delete later "(
-    int pV = (newbucket.nonBJETS.size()!=0) ? newbucket.nonBJETS[0].getPID() : -9999;
-    cout << "```````````````````" << Deltamin << "\t" << pV << endl;
     //label assignement
     double massbucket = newbucket.getBucketMass();
     string label = ((massbucket < MbucketMax) && (massbucket  > MbucketMin)) ? "t-" : "t0";
     newbucket.setBucketLabel(label);
-    cout << "M_ORI: " << newbucket.getBucketMass() << "\t" << newbucket.BJET.getM() << endl;
+    //**//cout << "M_ORI: " << newbucket.getBucketMass() << "\t" << newbucket.BJET.getM() << endl;
     return newbucket;
   };
 

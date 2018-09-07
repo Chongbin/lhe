@@ -87,6 +87,8 @@ int main()
         for (int i = 0; i < B.size(); ++i)
         {
           hmW.Fill(B[i].WcandMnum());
+	  cout << "W_cand_mass: " << B[i].WcandMnum() << endl;
+	  cout << "ratio_min: " << B[i].WcandRatio() << endl;
           hmBucketPrim.Fill(B[i].getBucketMass());
           hmratio.Fill(B[i].WcandRatio());
           if (B[i].getBucketLabel() == "t-") {tmincand.push_back(B[i]);}
@@ -104,7 +106,7 @@ int main()
         if (tmincand.size() == 2)
         {
           B = bucketAlgo::doublebucket(ev1, bucketP2massMax, bucketP2massMin, "t-", firstP2Bucketwt);
-          cout << "event: " << eventcounter << endl;
+          //**//cout << "event: " << eventcounter << endl;
         }
         else if (tmincand.size() == 1)
         {
@@ -136,19 +138,29 @@ int main()
           }
           else 
           {
-		  cout << "LL: " << B[i].getBucketLabel() << "\tmass: " << B[i].getBucketMass() << endl;
+		  //**//cout << "LL: " << B[i].getBucketLabel() << "\tmass: " << B[i].getBucketMass() << endl;
         	  ht0mass.Fill(B[i].getBucketMass());
         	  ht0Pt.Fill(B[i].getBucketPt());
         	  ht0eta.Fill(B[i].getBucketEta());
                   ++t0counter;
           }
+	cout << "\t|\t";
+	cout << "bucket " << i << "<--{ " << B[i].getBucketLabel() << " : ";
+	vector<int> plll = B[i].getPIDlist();
+       	for (vector<int>::const_iterator l = plll.begin(); l != plll.end(); ++l)
+	       cout <<  *l << ", ";
         }
+	cout << endl;
 
           vector <finalstate::particle> Xtra = bucketAlgo::extra(ev1.EVT, B); // extra bucket
           cout << Xtra.size() << endl;
+	  
+
           for (int nn=0; nn < Xtra.size(); ++nn)
           {
             ++tXcounter;
+	    cout << "EXTRA " << Xtra[nn].getpX() << "\t" << Xtra[nn].getpY() << "\t" << Xtra[nn].getpZ() << "\t" << Xtra[nn].getE() << "\t" << Xtra[nn].getPID() << endl;
+	    cout << "EXTRA MASS " << Xtra[nn].getM() << endl;
             hXmass.Fill(Xtra[nn].getM());
             hXPt.Fill(Xtra[nn].getPt());
             hXeta.Fill(Xtra[nn].getEta());

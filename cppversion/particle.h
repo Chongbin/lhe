@@ -75,7 +75,13 @@ namespace finalstate
 
   void setE(double p4) {E = p4;}
   
-  double getM() {return sqrt(E*E - px*px - py*py - pz*pz);}
+  double getM() 
+  {
+    double m2 = (E*E - px*px - py*py - pz*pz);
+    //cout << "debugmass " << m2 << endl;
+    if (m2 < 0) {m2 = 0;}
+    return sqrt(m2);
+  }
 
   double getPt() {return sqrt(px*px + py*py);}
 
