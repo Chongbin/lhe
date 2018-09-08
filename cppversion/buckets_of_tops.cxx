@@ -19,8 +19,8 @@ int main()
 //  testbucket();
   //ifstream inFile("../tt_had_test_one.lhe");
   //ifstream inFile("../tt_had_test.lhe");
-  ifstream inFile("../tt_hadronic.lhe");
-  //ifstream inFile("../bbjjj.lhe");
+  //ifstream inFile("../tt_hadronic.lhe");
+  ifstream inFile("../bbjjj.lhe");
   string line;
   bool event_flag = false; //switches on when finds an event
   bool event_meta = false; //event block readability switched off to skip the first event block line
@@ -86,11 +86,11 @@ int main()
         int telseindex; //tw or t0 bucket
         for (int i = 0; i < B.size(); ++i)
         {
-          hmW.Fill(B[i].WcandMnum());
+          if (B[i].getBucketMass() > -1) {hmW.Fill(B[i].WcandMnum());}
 	  cout << "W_cand_mass: " << B[i].WcandMnum() << endl;
 	  cout << "ratio_min: " << B[i].WcandRatio() << endl;
-          hmBucketPrim.Fill(B[i].getBucketMass());
-          hmratio.Fill(B[i].WcandRatio());
+          if (B[i].getBucketMass() > -1) {hmBucketPrim.Fill(B[i].getBucketMass());}
+          if (B[i].getBucketMass() > -1) {hmratio.Fill(B[i].WcandRatio());}
           if (B[i].getBucketLabel() == "t-") {tmincand.push_back(B[i]);}
           else 
           {
@@ -124,33 +124,49 @@ int main()
           cout << "]" << endl;*/
           if (B[i].getBucketLabel() == "tw") 
           {
+              if (B[i].getBucketMass() > -1) {
         	  htwmass.Fill(B[i].getBucketMass());
         	  htwPt.Fill(B[i].getBucketPt());
-        	  htweta.Fill(B[i].getBucketEta());
+        	  htweta.Fill(B[i].getBucketEta()); }
         	  ++twcounter;
           }
           else if (B[i].getBucketLabel() == "t-")
           {       
-        	  htminmass.Fill(B[i].getBucketMass());
+              if (B[i].getBucketMass() > -1) {
+      	          htminmass.Fill(B[i].getBucketMass());
         	  htminPt.Fill(B[i].getBucketPt());
-        	  htmineta.Fill(B[i].getBucketEta());
+        	  htmineta.Fill(B[i].getBucketEta());}
                   ++tmincounter;
           }
           else 
           {
 		  //**//cout << "LL: " << B[i].getBucketLabel() << "\tmass: " << B[i].getBucketMass() << endl;
-        	  ht0mass.Fill(B[i].getBucketMass());
+        	  if (B[i].getBucketMass() > -1) {
+		  ht0mass.Fill(B[i].getBucketMass());
         	  ht0Pt.Fill(B[i].getBucketPt());
-        	  ht0eta.Fill(B[i].getBucketEta());
+        	  ht0eta.Fill(B[i].getBucketEta());}
+		  if (B[i].getBucketEta() == 0) 
+		  {
+		          vector<int> plll = B[i].getPIDlist();
+			  cout << "bucket " << i << "<--{ " << B[i].getBucketLabel() << " : " << plll.size();
+			  for (int lll = 0; lll < plll.size(); ++lll)
+		          {
+				  cout << plll[lll] << " , ";
+			  }
+       	                  //for (vector<int>::const_iterator l = plll.begin(); l != plll.end(); ++l)
+	                    //  cout <<  *l << ", ";
+			  cout << endl;
+			  cout << "\tt0ETA: " << B[i].getBucketEta() << "\t event: " << eventcounter << endl;
+	          }
                   ++t0counter;
           }
-	cout << "\t|\t";
-	cout << "bucket " << i << "<--{ " << B[i].getBucketLabel() << " : ";
-	vector<int> plll = B[i].getPIDlist();
-       	for (vector<int>::const_iterator l = plll.begin(); l != plll.end(); ++l)
-	       cout <<  *l << ", ";
+	//*^*//cout << "\t|\t";
+	//*^*//cout << "bucket " << i << "<--{ " << B[i].getBucketLabel() << " : ";
+	//*^*//vector<int> plll = B[i].getPIDlist();
+       	//*^*//for (vector<int>::const_iterator l = plll.begin(); l != plll.end(); ++l)
+	       //*^*//cout <<  *l << ", ";
         }
-	cout << endl;
+	//*^*//cout << endl;
 
           vector <finalstate::particle> Xtra = bucketAlgo::extra(ev1.EVT, B); // extra bucket
           cout << Xtra.size() << endl;
@@ -161,7 +177,7 @@ int main()
             ++tXcounter;
 	    cout << "EXTRA " << Xtra[nn].getpX() << "\t" << Xtra[nn].getpY() << "\t" << Xtra[nn].getpZ() << "\t" << Xtra[nn].getE() << "\t" << Xtra[nn].getPID() << endl;
 	    cout << "EXTRA MASS " << Xtra[nn].getM() << endl;
-            hXmass.Fill(Xtra[nn].getM());
+	    hXmass.Fill(Xtra[nn].getM());
             hXPt.Fill(Xtra[nn].getPt());
             hXeta.Fill(Xtra[nn].getEta());
           }

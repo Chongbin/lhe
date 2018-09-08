@@ -92,10 +92,10 @@ namespace bucketAlgo
   bucket()
   {
     bucket_label = "tx"; //tx means label unassigned
-    Mbucket = 0; //GeV
-    pTbucket = 0; //GeV
-    etabucket = 0;
-    mpairnum = -1; //GeV
+    Mbucket = -9999; //GeV
+    pTbucket = -9999; //GeV
+    etabucket = -9999;
+    mpairnum = -9999; //GeV
   }
 
   bucket(vector <finalstate::particle> nonbjets, finalstate::particle bjet)

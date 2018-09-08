@@ -9,8 +9,8 @@ ROOT.gROOT.SetBatch(1)
 
 #data = graphing.split('../tt_had_test_one.lhe')
 #data = graphing.split('../tt_had_test.lhe')
-#data = graphing.split('../bbjjj.lhe')
-data = graphing.split('../tt_hadronic.lhe')
+data = graphing.split('../bbjjj.lhe')
+#data = graphing.split('../tt_hadronic.lhe')
 
 mass_tw = []
 mass_t_ = []
@@ -47,10 +47,10 @@ for i in range(len(data)):
                         m_b.append(ratios[1][1])
                         ratio.append(ratios[1][2])
                 for n in range(len(bucket)-1):
-                        p = [0.0, 0.0, 0.0, 0.0]
+			p = [0.0, 0.0, 0.0, 0.0]
                         for j in range(len(bucket[n])):
                                 p = [sum(x) for x in zip(p, bucket[n][j][0])]
-                        m = buckets_all.mass(p)
+                        m = buckets_all.mass(p) if (len(bucket[n]) > 0) else -9999
                         piD = [x[-1][0] for x in bucket[n]]
                         print "label: %s\tmass: %.3f"% (labels[n], m), piD
                         pt = math.sqrt(p[0] ** 2 + p[1] ** 2)
@@ -59,6 +59,7 @@ for i in range(len(data)):
 			else: 
 				pangle = math.acos(p[2] / pmag)
                         	eta = - math.log(math.tan(pangle/2))
+			if (m < -1): continue  #skipping empty buckets
                         if labels[n] == "tw":
                                 mass_tw.append(m)
                                 pt_tw.append(pt)
