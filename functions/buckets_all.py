@@ -13,9 +13,13 @@ def mass(momentum):
 def quarks(event):
   quarks = []
   bottom = 0
+  ord_index = 0
   for i in range(len(event)):
     if ((event[i][0] >= -5 and event[i][0] <= 5) or math.fabs(event[i][0]) == 21) and event[i][1] == 1:
-      quarks.append([event[i][6:10],event[i][0:6]])
+      ord_index += 1
+      extrainfo = event[i][0:6]*1
+      extrainfo.append(ord_index)  #particle order added
+      quarks.append([event[i][6:10],extrainfo])
       if (math.fabs(event[i][0]) == 5):
         bottom += 1
   if bottom == 2:
@@ -46,7 +50,7 @@ def top_pset(quarks):
       if quarks[index][1][0] == 5 or quarks[index][1][0] == -5:
         count += 1
       top_set.append(quarks[index])
-    if count == 1 and len(top_set) > 1:
+    if count == 1 and len(top_set) >= 1: #modified to allow single b bucket too
       top_powerset.append(top_set)
     #print top_powerset 
   return top_powerset
@@ -74,20 +78,20 @@ def comb_buckets(event):
       m1 = mass(p1)
       m2 = mass(p2)
       d = 100 * ((m1 - 173.5) ** 2) + (m2 - 173.5) ** 2
-      piD1 = [x[-1][0] for x in b1]
-      piD2 = [x[-1][0] for x in b2]
-      #print "%.3f"%d, piD1, "\t", piD2
+      piD1 = [x[-1][-1] for x in b1]
+      piD2 = [x[-1][-1] for x in b2]
+      #print "del: %.3f"%d, piD1, "\t", piD2
       if d < delta:
         delta = d
         bucket1 = b1
         bucket2 = b2
         mass1 = m1
         mass2 = m2
-    piD1 = [x[-1][0] for x in bucket1]
-    piD2 = [x[-1][0] for x in bucket2]
-    print "del: ", delta
-    print "B1: ", piD1
-    print "B2: ", piD2
+    #piD1 = [x[-1][0] for x in bucket1]
+    #piD2 = [x[-1][0] for x in bucket2]
+    #^#print "del: ", delta
+    #^#print "B1: ", piD1
+    #^#print "B2: ", piD2
     if mass1 > 155 and mass1 < 200:
       t0.append('not t0')
     else:
@@ -114,6 +118,9 @@ def label_buckets(event):
       for j in range(len(buckets[i])):
         p_b = [sum(x) for x in zip(p_b, buckets[i][j][0])]
       m_b = mass(p_b)
+      #piD = [x[-1][-1] for x in buckets[i]]
+      #if ((m_b < 10) and (m_b > -1)): 
+      #  print "massB: ", m_b, "\tbucket: ", piD
       ratio_min = float('inf')
       m_jk_min = 0
       for j in range(len(buckets[i])):
@@ -124,19 +131,19 @@ def label_buckets(event):
           p = [sum(x) for x in zip(p1, p2)]
           m_jk = mass(p)
           diff = math.fabs(m_jk/m_b - 80.4/173.5)
-	  print "dd: ", diff, "\tratmin: ", ratio_min
+	  #^#print "dd: ", diff, "\tratmin: ", ratio_min
           if diff < ratio_min:
             m_jk_min = m_jk
             ratio_min = diff
-	    print "temp mass W: ", m_jk_min
+	    #^#print "temp mass W: ", m_jk_min
       if (t0[i] == "t0"): labels.append("t0")
       else:
         if (ratio_min < 0.15):
           labels.append('tw')
         else:
           labels.append('t_')
-      print "W_cand_mass: ", m_jk_min
-      print "ratio_min: ", ratio_min
+      #^#print "W_cand_mass: ", m_jk_min
+      #^#print "ratio_min: ", ratio_min
       masses.append([m_jk_min, m_b, ratio_min])
     return labels, masses 
   else:

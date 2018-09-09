@@ -22,6 +22,7 @@ namespace finalstate
     double E;
     int pid;
     int status;
+    int order;
   public:
   
   ~particle() {} //destructor
@@ -34,6 +35,7 @@ namespace finalstate
     E = 0; 
     pid = -9999;
     status = 0;
+    order = -9999;
   }
   
   particle(string line) 
@@ -67,6 +69,8 @@ namespace finalstate
 
   int getStatus() {return status;}
   
+  int getOrder() {return order;}
+  
   void setpX(double p1) {px = p1;}
 
   void setpY(double p2) {py = p2;}
@@ -74,6 +78,8 @@ namespace finalstate
   void setpZ(double p3) {pz = p3;}
 
   void setE(double p4) {E = p4;}
+
+  void setOrder(int o) {order = o;}
   
   double getM() 
   {
@@ -107,7 +113,7 @@ namespace finalstate
   // overload = operator to compare particle objects
   bool operator=(const particle& p2)
   {
-    return ((px = p2.px) && (py = p2.py) && (pz = p2.pz) && (E = p2.E) && (pid = p2.pid) && (status = p2.status));
+    return ((px = p2.px) && (py = p2.py) && (pz = p2.pz) && (E = p2.E) && (pid = p2.pid) && (status = p2.status) && (order = p2.order));
   }  
 
   };
@@ -129,6 +135,7 @@ namespace finalstate
   {
     EVT = evt; // delete this (this is silly)
     for (int i = 0; i < evt.size(); ++i) {
+      evt[i].setOrder(i+1); // setting order
       int pid = evt[i].getPID();
       //cout << pid << "\t" << evt[i].getpX() << endl;
       if (abs(pid) == 5)

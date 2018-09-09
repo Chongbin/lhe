@@ -27,6 +27,7 @@ namespace bucketAlgo
       for (int j = 0; j < set.size(); ++j)
       {
         findflag = findflag || (EVT[i]==set[j]); 
+	//cout << "findflag: " << findflag  << "\tevtorder: " << EVT[i].getOrder() << "\tbucketpartOrder: " << set[j].getOrder() << endl;
       }
       if (!findflag) {compset.push_back(EVT[i]);}
     }
@@ -135,6 +136,16 @@ namespace bucketAlgo
     return pidlist;
   }
 
+  vector<int> getOrderlist()
+  {
+    vector<int> orderlist;
+    for (int i=0; i < members.size(); ++i)
+    {
+      orderlist.push_back(members[i].getOrder());
+    }
+    return orderlist;
+  }
+
   bool twflag() //true : tw ; false : not tw
   {
     ratio_min = pow(10, 10); 
@@ -147,18 +158,22 @@ namespace bucketAlgo
       for (int j = 0; j < sizeB; ++j)
       {
         if (j < i) {continue;}
-	cout << "(i,j): " << i << "\t" << j << endl;
+	//cout << "(i,j): " << i << "\t" << j << endl;
+	//^//cout << "particle1: " << members[i].getOrder() << "\tpx: " << members[i].getpX() << "\tpy: " << members[i].getpY() << "\tpz: " << members[i].getpZ() << "\tE: " << members[i].getE() << "\tpid: " << members[i].getPID() << endl;
+	//^//cout << "particle2: " << members[j].getOrder() << "\tpx: " << members[j].getpX() << "\tpy: " << members[j].getpY() << "\tpz: " << members[j].getpZ() << "\tE: " << members[j].getE() << "\tpid: " << members[j].getPID() << endl;
 	finalstate::particle temp = members[i]+members[j];
         double dd = abs((temp.getM()/Mbucket) - (mW/mTop));
-	cout << "dd: " << dd << "\tratmin: " << ratio_min << endl;
+	//^//cout << "m_ij: " << temp.getM() << "\tmbucket: " << Mbucket << "\ttransient_mass_ratio: " << ratio_min << endl;
+	//cout << "dd: " << dd << "\tratmin: " << ratio_min << endl;
         if (ratio_min > dd) //
         {
           ratio_min = dd;
           mpairnum = temp.getM();
-	  cout << "temp mass W: " << mpairnum << endl;
+	  //^//cout << "temp_mass_W: " << mpairnum << "\tupdating_mass_ratio: " << ratio_min << endl;
         }
       }
     }
+    //^//cout << "final_mass_ratio: " << ratio_min << endl;
     if ( (ratio_min) < 0.15 ) {flag = true;}
     return flag;
   }
@@ -185,6 +200,9 @@ namespace bucketAlgo
     for (int i = 0; i < B.size(); ++i)
     {
       Xmembers = bucketAlgo::compvec(Xmembers, B[i].members);
+      //cout << "iter" << i << ": ";
+      //for (int j = 0; j < B[i].members.size(); ++j) { cout <<  B[i].members[j].getOrder() << " ,"; }
+      //cout << endl;
     }
     return Xmembers;
   };
@@ -253,37 +271,37 @@ namespace bucketAlgo
         }
         bucketAlgo::bucket Afirst(nonbA, ev.bjet[0]);
         double AfirstDistance = (target_label == "tw") ? Afirst.twOptMetric() : Afirst.tminusOptMetric();
-        vector <int> pidlAfirst = Afirst.getPIDlist(); //
+        vector <int> pidlAfirst = Afirst.getOrderlist(); //
         bucketAlgo::bucket Asecond(nonbA, ev.bjet[1]);
 	double AsecondDistance = (target_label == "tw") ? Asecond.twOptMetric() : Asecond.tminusOptMetric();
-        vector <int> pidlAsecond = Asecond.getPIDlist(); //
+        vector <int> pidlAsecond = Asecond.getOrderlist(); //
         bucketAlgo::bucket Bfirst(nonbB, ev.bjet[0]);
 	double BfirstDistance = (target_label == "tw") ? Bfirst.twOptMetric() : Bfirst.tminusOptMetric();
-        vector <int> pidlBfirst = Bfirst.getPIDlist(); //
+        vector <int> pidlBfirst = Bfirst.getOrderlist(); //
         bucketAlgo::bucket Bsecond(nonbB, ev.bjet[1]);
 	double BsecondDistance = (target_label == "tw") ? Bsecond.twOptMetric() : Bsecond.tminusOptMetric();
-        vector <int> pidlBsecond = Bsecond.getPIDlist(); //
+        vector <int> pidlBsecond = Bsecond.getOrderlist(); //
         
         double del1 = (B1weight*AfirstDistance) + BsecondDistance;
         double del2 = (B1weight*BfirstDistance) + AsecondDistance;
         double del3 = AfirstDistance + (B1weight*BsecondDistance);
         double del4 = BfirstDistance + (B1weight*AsecondDistance);
-        /*cout << del1 << "\t[";
+        /*cout << "del1: " << del1 << "\t[";
         for (int j = 0; j < pidlAfirst.size(); ++j) {cout << pidlAfirst[j] << ", ";}
         cout << "]\t[";
         for (int j = 0; j < pidlBsecond.size(); ++j) {cout << pidlBsecond[j] << ", ";}
         cout << "]" << endl;
-        cout << del2 << "\t[";
+        cout << "del2: " << del2 << "\t[";
         for (int j = 0; j < pidlBfirst.size(); ++j) {cout << pidlBfirst[j] << ", ";}
         cout << "]\t[";
         for (int j = 0; j < pidlAsecond.size(); ++j) {cout << pidlAsecond[j] << ", ";}
         cout << "]" << endl;
-        cout << del3 << "\t[";
+        cout << "del3: " << del3 << "\t[";
         for (int j = 0; j < pidlBsecond.size(); ++j) {cout << pidlBsecond[j] << ", ";}
         cout << "]\t[";
         for (int j = 0; j < pidlAfirst.size(); ++j) {cout << pidlAfirst[j] << ", ";}
         cout << "]" << endl;
-        cout << del4 << "\t[";
+        cout << "del4: " << del4 << "\t[";
         for (int j = 0; j < pidlAsecond.size(); ++j) {cout << pidlAsecond[j] << ", ";}
         cout << "]\t[";
         for (int j = 0; j < pidlBfirst.size(); ++j) {cout << pidlBfirst[j] << ", ";}
@@ -334,33 +352,39 @@ namespace bucketAlgo
     //cout << B.size() << "\t Bucketsize should be 2" << endl;
     B.push_back(B1);
     B.push_back(B2);
-    if (target_label == "tw") 
-    {
-      cout << "del: " << Deltatw << endl;
-      cout << "B1: [";
-      vector<int> b1pid = B[0].getPIDlist();
-      for (int j = 0; j < b1pid.size(); ++j) {cout << b1pid[j] << ",\t";}
-      cout << " ] " << endl;
-      cout << "B2: [";
-      vector<int> b2pid = B[1].getPIDlist();
-      for (int j = 0; j < b2pid.size(); ++j) {cout << b2pid[j] << ",\t";}
-      cout << " ] " << endl;
-    }
+    //^//if (target_label == "tw") 
+    //^//{
+      //^//cout << "del: " << Deltatw << endl;
+//      cout << "B1: [";
+//      vector<int> b1pid = B[0].getPIDlist();
+//      for (int j = 0; j < b1pid.size(); ++j) {cout << b1pid[j] << ",\t";}
+//      cout << " ] " << endl;
+//      cout << "B2: [";
+//      vector<int> b2pid = B[1].getPIDlist();
+//      for (int j = 0; j < b2pid.size(); ++j) {cout << b2pid[j] << ",\t";}
+//      cout << " ] " << endl;
+
+      //^//cout << "B1: [";
+      //^//vector<int> b1pid = B[0].getOrderlist();
+      //^//for (int j = 0; j < b1pid.size(); ++j) {cout << b1pid[j] << ",\t";}
+      //^//cout << " ] " << endl;
+      //^//cout << "B2: [";
+      //^//vector<int> b2pid = B[1].getOrderlist();
+      //^//for (int j = 0; j < b2pid.size(); ++j) {cout << b2pid[j] << ",\t";}
+      //^//cout << " ] " << endl;
+    //^//}
     for (int i = 0; i < B.size(); ++i)
     {
       string label; //label assignement , 
       double Bm = B[i].getBucketMass();
       //cout << "bucket mass: " << Bm << " : " << (Bm < MbucketMax) << endl;
       //cout << "bucket mass range: " << MbucketMin << " : " << MbucketMax << endl;
-      if ((Bm < MbucketMax) && (Bm > MbucketMin))
+      if (target_label == "tw")
       {
-        if (target_label == "tw")
-        {
-          label = (B[i].twflag())?"tw":"t-";
-        }
-        else {label = "t-";}
+        label = (B[i].twflag())?"tw":"t-";
       }
-      else
+      else {label = "t-";}
+      if ((Bm > MbucketMax) || (Bm < MbucketMin))
       {
         label = "t0";
       }

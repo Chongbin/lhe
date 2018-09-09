@@ -19,8 +19,10 @@ int main()
 //  testbucket();
   //ifstream inFile("../tt_had_test_one.lhe");
   //ifstream inFile("../tt_had_test.lhe");
-  //ifstream inFile("../tt_hadronic.lhe");
-  ifstream inFile("../bbjjj.lhe");
+  ifstream inFile("../tt_hadronic.lhe");
+  //ifstream inFile("../bbjjj.lhe");
+  //ifstream inFile("../bbjjj_short.lhe");
+
   string line;
   bool event_flag = false; //switches on when finds an event
   bool event_meta = false; //event block readability switched off to skip the first event block line
@@ -87,8 +89,14 @@ int main()
         for (int i = 0; i < B.size(); ++i)
         {
           if (B[i].getBucketMass() > -1) {hmW.Fill(B[i].WcandMnum());}
-	  cout << "W_cand_mass: " << B[i].WcandMnum() << endl;
-	  cout << "ratio_min: " << B[i].WcandRatio() << endl;
+	  /*if ((B[i].getBucketMass() > -1) && (B[i].getBucketMass() < 10)){
+          cout << "massB: " << B[i].getBucketMass() << "\tbucket: [";
+          vector<int> pidlist =  B[i].getOrderlist();
+          for (int j = 0; j < pidlist.size(); ++j) {cout << pidlist[j] << ", ";}
+          cout << "]" << endl;
+	  }*/
+	  //^//cout << "W_cand_mass: " << B[i].WcandMnum() << endl;
+	  //^//cout << "ratio_min: " << B[i].WcandRatio() << endl;
           if (B[i].getBucketMass() > -1) {hmBucketPrim.Fill(B[i].getBucketMass());}
           if (B[i].getBucketMass() > -1) {hmratio.Fill(B[i].WcandRatio());}
           if (B[i].getBucketLabel() == "t-") {tmincand.push_back(B[i]);}
@@ -147,16 +155,17 @@ int main()
         	  ht0eta.Fill(B[i].getBucketEta());}
 		  if (B[i].getBucketEta() == 0) 
 		  {
-		          vector<int> plll = B[i].getPIDlist();
-			  cout << "bucket " << i << "<--{ " << B[i].getBucketLabel() << " : " << plll.size();
-			  for (int lll = 0; lll < plll.size(); ++lll)
-		          {
-				  cout << plll[lll] << " , ";
-			  }
+		          //vector<int> plll = B[i].getPIDlist();
+		          vector<int> plll = B[i].getOrderlist();
+			  //^//cout << "bucket " << i << "<--{ " << B[i].getBucketLabel() << " : " << plll.size();
+			  //^//for (int lll = 0; lll < plll.size(); ++lll)
+		          //^//{
+				  //^//cout << plll[lll] << " , ";
+			  //^//}
        	                  //for (vector<int>::const_iterator l = plll.begin(); l != plll.end(); ++l)
 	                    //  cout <<  *l << ", ";
-			  cout << endl;
-			  cout << "\tt0ETA: " << B[i].getBucketEta() << "\t event: " << eventcounter << endl;
+			  //^//cout << endl;
+			  //^//cout << "\tt0ETA: " << B[i].getBucketEta() << "\t event: " << eventcounter << endl;
 	          }
                   ++t0counter;
           }
@@ -169,14 +178,14 @@ int main()
 	//*^*//cout << endl;
 
           vector <finalstate::particle> Xtra = bucketAlgo::extra(ev1.EVT, B); // extra bucket
-          cout << Xtra.size() << endl;
+          //cout << "extrasize: "  << Xtra.size() << "\tBsize: " << B.size() << endl;
 	  
 
           for (int nn=0; nn < Xtra.size(); ++nn)
           {
             ++tXcounter;
-	    cout << "EXTRA " << Xtra[nn].getpX() << "\t" << Xtra[nn].getpY() << "\t" << Xtra[nn].getpZ() << "\t" << Xtra[nn].getE() << "\t" << Xtra[nn].getPID() << endl;
-	    cout << "EXTRA MASS " << Xtra[nn].getM() << endl;
+	    //cout << "EXTRA " << Xtra[nn].getpX() << "\t" << Xtra[nn].getpY() << "\t" << Xtra[nn].getpZ() << "\t" << Xtra[nn].getE() << "\t" << Xtra[nn].getPID() << endl;
+	    //cout << "EXTRA MASS " << Xtra[nn].getM() << endl;
 	    hXmass.Fill(Xtra[nn].getM());
             hXPt.Fill(Xtra[nn].getPt());
             hXeta.Fill(Xtra[nn].getEta());

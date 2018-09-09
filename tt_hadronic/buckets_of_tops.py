@@ -9,8 +9,9 @@ ROOT.gROOT.SetBatch(1)
 
 #data = graphing.split('../tt_had_test_one.lhe')
 #data = graphing.split('../tt_had_test.lhe')
-data = graphing.split('../bbjjj.lhe')
-#data = graphing.split('../tt_hadronic.lhe')
+#data = graphing.split('../bbjjj.lhe')
+data = graphing.split('../tt_hadronic.lhe')
+#data = graphing.split('../bbjjj_short.lhe')
 
 mass_tw = []
 mass_t_ = []
@@ -51,8 +52,9 @@ for i in range(len(data)):
                         for j in range(len(bucket[n])):
                                 p = [sum(x) for x in zip(p, bucket[n][j][0])]
                         m = buckets_all.mass(p) if (len(bucket[n]) > 0) else -9999
-                        piD = [x[-1][0] for x in bucket[n]]
-                        print "label: %s\tmass: %.3f"% (labels[n], m), piD
+                        #piD = [x[-1][0] for x in bucket[n]]
+                        piD = [x[-1][-1] for x in bucket[n]]
+                        #^#print "label: %s\tmass: %.3f"% (labels[n], m), piD
                         pt = math.sqrt(p[0] ** 2 + p[1] ** 2)
                         pmag = math.sqrt(pt ** 2 + p[2] ** 2)
 			if (pmag == 0): eta = 0
